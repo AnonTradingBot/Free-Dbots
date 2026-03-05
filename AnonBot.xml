@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="stake">stake</variable>
+    <variable id="base_stake">base_stake</variable>
+    <variable id="loss_count">loss_count</variable>
+  </variables>
+
+  <!-- TRADE SETTINGS -->
+  <block type="trade_definition" x="20" y="20">
+    <statement name="TRADE_OPTIONS">
+      <block type="trade_definition_market">
+        <field name="MARKET_LIST">synthetic_index</field>
+        <field name="SUBMARKET_LIST">random_index</field>
+        <field name="SYMBOL_LIST">R_100</field>
+        <next>
+          <block type="trade_definition_tradetype">
+            <field name="TRADETYPE_LIST">rise_fall</field>
+            <next>
+              <block type="trade_definition_contracttype">
+                <field name="TYPE_LIST">rise</field>
+                <next>
+                  <block type="trade_definition_duration">
+                    <field name="DURATION">4</field>
+                    <field name="DURATION_UNIT">t</field>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+
+  <!-- BASE SETTINGS -->
+  <block type="variables_set" x="20" y="220">
+    <field name="VAR" id="base_stake">base_stake</field>
+    <value name="VALUE">
+      <block type="math_number">
+        <field name="NUM">30</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="variables_set" x="20" y="280">
+    <field name="VAR" id="stake">stake</field>
+    <value name="VALUE">
+      <block type="variables_get">
+        <field name="VAR" id="base_stake">base_stake</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="variables_set" x="20" y="340">
+    <field name="VAR" id="loss_count">loss_count</field>
+    <value name="VALUE">
+      <block type="math_number">
+        <field name="NUM">0</field>
+      </block>
+    </value>
+  </block>
+
+  <!-- TREND FILTER -->
+  <block type="controls_if" x="20" y="420">
+    <value name="IF0">
+      <block type="logic_compare">
+        <field name="OP">GT</field>
+        <value name="A">
+          <block type="tick_value"/>
+        </value>
+        <value name="B">
+          <block type="tick_previous"/>
+        </value>
+      </block>
+    </value>
+
+    <statement name="DO0">
+      <block type="trade">
+        <value name="AMOUNT">
+          <block type="variables_get">
+            <field name="VAR" id="stake">stake</field>
+          </block>
+        </value>
+      </block>
+    </statement>
+  </block>
+
+  <!-- WIN / LOSS MANAGEMENT -->
+  <block type="controls_if" x="20" y="560">
+    <value name="IF0">
+      <block type="trade_won"/>
+    </value>
+
+    <statement name="DO0">
+      <block type="variables_set">
+        <field name="VAR" id="stake">stake</field>
+        <value name="VALUE">
+          <block type="math_arithmetic">
+            <field name="OP">MULTIPLY</field>
+            <value name="A">
+              <block type="variables_get">
+                <field name="VAR" id="stake">stake</field>
+              </block>
+            </value>
+            <value name="B">
+              <block type="math_number">
+                <field name="NUM">1.6</field>
+              </block>
+            </value>
+          </block>
+        </value>
+      </block>
+      <next>
+        <block type="variables_set">
+          <field name="VAR" id="loss_count">loss_count</field>
+          <value name="VALUE">
+            <block type="math_number">
+              <field name="NUM">0</field>
+            </block>
+          </value>
+        </block>
+      </next>
+    </statement>
+
+    <statement name="ELSE">
+      <block type="variables_set">
+        <field name="VAR" id="loss_count">loss_count</field>
+        <value name="VALUE">
+          <block type="math_arithmetic">
+            <field name="OP">ADD</field>
+            <value name="A">
+              <block type="variables_get">
+                <field name="VAR" id="loss_count">loss_count</field>
+              </block>
+            </value>
+            <value name="B">
+              <block type="math_number">
+                <field name="NUM">1</field>
+              </block>
+            </value>
+          </block>
+        </value>
+      </block>
+      <next>
+        <block type="variables_set">
+          <field name="VAR" id="stake">stake</field>
+          <value name="VALUE">
+            <block type="variables_get">
+              <field name="VAR" id="base_stake">base_stake</field>
+            </block>
+          </value>
+        </block>
+      </next>
+    </statement>
+  </block>
+</xml>
